@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ranking Torneo de Karate</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 80%;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ranking Torneo de Karate</h1>
+  <div id="ranking">Cargando tabla...</div>
+
+  <script>
+    const sheetID = "1hrE2SjUW2BgDBHsd4xXNx82RfUQwJ7mvxeNGyeWKJ2c";
+    const sheetName = "Hoja1"; // Cambiá si tu hoja tiene otro nombre
+    const url = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const table = document.createElement("table");
+        const header = table.insertRow();
+        ["Puesto", "Nombre y Apellido", "Graduación", "Categoría", "Dojo"].forEach(text => {
+          const th = document.createElement("th");
+          th.textContent = text;
+          header.appendChild(th);
+        });
+
+        data.forEach(row => {
+          const tr = table.insertRow();
+          ["Puesto", "Nombre y Apellido", "Graduación", "Categoría", "Dojo"].forEach(key => {
+            const td = tr.insertCell();
+            td.textContent = row[key] || "";
+          });
+        });
+
+        const container = document.getElementById("ranking");
+        container.innerHTML = "";
+        container.appendChild(table);
+      })
+      .catch(err => {
+        document.getElementById("ranking").innerHTML = "Error al cargar los datos.";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
