@@ -13,14 +13,14 @@
     h1 {
       text-align: center;
       color: #111;
+      margin-bottom: 2rem;
     }
 
     h3 {
-      margin-top: 3rem;
+      margin-top: 2rem;
       color: #333;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 0.3rem;
-      font-size: 1.2rem;
+      font-size: 1rem;
+      font-weight: 600;
     }
 
     table {
@@ -42,6 +42,16 @@
       font-weight: bold;
       color: #222;
     }
+
+    /* 🎨 Estilo especial para la tabla principal (125) */
+    .tabla-principal th {
+      background-color: #ccebd6; /* verde claro */
+      color: #114d2b;
+    }
+
+    .tabla-principal td {
+      background-color: #e7f6ee; /* verde suave */
+    }
   </style>
 </head>
 <body>
@@ -51,20 +61,20 @@
   <script>
     const hojas = [
       { nombre: "125", titulo: "Categoría 125 Ranking: Puntaje Total" },
-      { nombre: "SudChile", subtitulo: "Torneo Sudamericano Chile" },
-      { nombre: "NacKyudo", subtitulo: "Torneo Nacional Kyudokan" },
-      { nombre: "NakAKAO", subtitulo: "Torneo Nacional AKAO" },
-      { nombre: "RankFakko1", subtitulo: "Torneo Raqueable FAKKO Nº1" },
-      { nombre: "RankFakko2", subtitulo: "Torneo Raqueable FAKKO Nº2" },
-      { nombre: "RankFakko3", subtitulo: "Torneo Raqueable FAKKO Nº3" },
-      { nombre: "RankFakko4", subtitulo: "Torneo Raqueable FAKKO Nº4" },
+      { nombre: "SudChile", titulo: "Torneo Sudamericano Chile" },
+      { nombre: "NacKyudo", titulo: "Torneo Nacional Kyudokan" },
+      { nombre: "NakAKAO", titulo: "Torneo Nacional AKAO" },
+      { nombre: "RankFakko1", titulo: "Torneo Raqueable FAKKO Nº1" },
+      { nombre: "RankFakko2", titulo: "Torneo Raqueable FAKKO Nº2" },
+      { nombre: "RankFakko3", titulo: "Torneo Raqueable FAKKO Nº3" },
+      { nombre: "RankFakko4", titulo: "Torneo Raqueable FAKKO Nº4" },
     ];
 
     const sheetId = "1Uws6EozyrILb8clWBiWHUv7XQHyOWhTpmMMerqsFZJg";
     const contenedor = document.getElementById("contenedor-tablas");
 
     async function cargarCSVEnOrden() {
-      for (const { nombre, titulo } of hojas) {
+      for (const { nombre, titulo, subtitulo } of hojas) {
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
         try {
           const response = await fetch(url);
@@ -73,21 +83,29 @@
 
           const table = document.createElement('table');
           const caption = document.createElement('h3');
-          caption.textContent = titulo;
+          caption.textContent = titulo || subtitulo;
           contenedor.appendChild(caption);
 
           const thead = document.createElement('thead');
           const tbody = document.createElement('tbody');
 
           rows.forEach((cols, index) => {
+            // Filtrar columnas vacías (fantasmas)
+            cols = cols.filter((col, i) => index === 0 || rows[0][i]);
+
             const tr = document.createElement('tr');
             cols.forEach(col => {
               const cell = document.createElement(index === 0 ? 'th' : 'td');
-              cell.textContent = col.trim().replace(/^"|"$/g, '');  // ✅ limpia comillas
+              cell.textContent = col.trim().replace(/^"|"$/g, ''); // quita comillas
               tr.appendChild(cell);
             });
             (index === 0 ? thead : tbody).appendChild(tr);
           });
+
+          // Estilo especial para la tabla principal
+          if (nombre === "125") {
+            table.classList.add("tabla-principal");
+          }
 
           table.appendChild(thead);
           table.appendChild(tbody);
@@ -97,6 +115,12 @@
         }
       }
     }
+
+    cargarCSVEnOrden();
+  </script>
+</body>
+</html>
+
 
     cargarCSVEnOrden();
   </script>
