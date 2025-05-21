@@ -43,7 +43,7 @@
       color: #222;
     }
 
-    /* 🎨 Estilo especial para la tabla principal (125) */
+    /* 🎨 Estilo especial para la tabla principal (122) */
     .tabla-principal th {
       background-color: #ccebd6; /* verde claro */
       color: #114d2b;
@@ -55,7 +55,7 @@
   </style>
 </head>
 <body>
-  <h1>CATEGORÍA 122: KATA - SENIOR (>40 AÑOS) - MASCULINO - DANES</h1>
+  <h1>CATEGORÍA 122: [MODIFICÁ ESTE TÍTULO SI QUERÉS]</h1>
   <div id="contenedor-tablas"></div>
 
   <script>
@@ -70,14 +70,12 @@
       { nombre: "RankFakko4", titulo: "Torneo Raqueable FAKKO Nº4" },
     ];
 
-    const sheetId = "1Uws6EozyrILb8clWBiWHUv7XQHyOWhTpmMMerqsFZJg";
+    const sheetId = "1cixb3ASjRPkgSWGU6fgqXvZ_f-Yj7AS94Y4Q-oGkxUw";
     const contenedor = document.getElementById("contenedor-tablas");
 
     async function cargarCSVEnOrden() {
-      for (const { nombre, titulo, subtitulo } of hojas) {
-        const sheetId = "1cixb3ASjRPkgSWGU6fgqXvZ_f-Yj7AS94Y4Q-oGkxUw";
-const nombre = "122";
-const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
+      for (const { nombre, titulo } of hojas) {
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
         try {
           const response = await fetch(url);
           const csvText = await response.text();
@@ -85,27 +83,24 @@ const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:c
 
           const table = document.createElement('table');
           const caption = document.createElement('h3');
-          caption.textContent = titulo || subtitulo;
+          caption.textContent = titulo;
           contenedor.appendChild(caption);
 
           const thead = document.createElement('thead');
           const tbody = document.createElement('tbody');
 
           rows.forEach((cols, index) => {
-            // Filtrar columnas vacías (fantasmas)
             cols = cols.filter((col, i) => index === 0 || rows[0][i]);
-
             const tr = document.createElement('tr');
             cols.forEach(col => {
               const cell = document.createElement(index === 0 ? 'th' : 'td');
-              cell.textContent = col.trim().replace(/^"|"$/g, ''); // quita comillas
+              cell.textContent = col.trim().replace(/^"|"$/g, '');
               tr.appendChild(cell);
             });
             (index === 0 ? thead : tbody).appendChild(tr);
           });
 
-          // Estilo especial para la tabla principal
-          if (nombre === "125") {
+          if (nombre === "122") {
             table.classList.add("tabla-principal");
           }
 
@@ -124,7 +119,3 @@ const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:c
 </html>
 
 
-    cargarCSVEnOrden();
-  </script>
-</body>
-</html>
