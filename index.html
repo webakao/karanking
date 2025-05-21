@@ -1,220 +1,114 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Listado de Categorías</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background-color: #f4f4f4;
+<script>
+  const sheetId = "1_hjeo5EjfSx39Ca_iudq3mtqgHKbssua8ySueJTvUpI";
+  const sheetName = "categorias"; // ¡IMPORTANTE! debe coincidir con el nombre de la pestaña
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+
+  const filtroEdad = document.getElementById("filtro-edad");
+  const filtroSexo = document.getElementById("filtro-sexo");
+  const filtroGrado = document.getElementById("filtro-grado");
+  const tablaBody = document.querySelector("#tabla-categorias tbody");
+
+  let datos = [];
+
+  async function cargarDatos() {
+    try {
+      const response = await fetch(url);
+      const csvText = await response.text();
+      const filas = csvText.trim().split('\n').map(fila => fila.split(',').map(col => col.trim().replace(/^"|"$/g, '')));
+
+      const encabezados = filas[0];
+      const idxCategoria = encabezados.indexOf("CATEGORÍA");
+      const idxEdad = encabezados.indexOf("EDAD");
+      const idxSexo = encabezados.indexOf("SEXO");
+      const idxGrado = encabezados.indexOf("GRADUACIÓN");
+      const idxDivision = encabezados.indexOf("DIVISIÓN");
+
+      datos = filas.slice(1).map(fila => ({
+        categoria: fila[idxCategoria],
+        edad: fila[idxEdad],
+        sexo: fila[idxSexo],
+        grado: fila[idxGrado],
+        division: fila[idxDivision],
+      }));
+
+      poblarFiltros();
+      mostrarDatos();
+    } catch (error) {
+      console.error("Error al cargar los datos:", error);
     }
+  }
 
-    h1 {
-      text-align: center;
-      color: #111;
-      margin-bottom: 2rem;
-    }
+  function poblarFiltros() {
+    const edades = [...new Set(datos.map(d => d.edad))].sort();
+    const sexos = [...new Set(datos.map(d => d.sexo))].sort();
+    const grados = [...new Set(datos.map(d => d.grado))].sort();
 
-    .filtros {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
+    edades.forEach(edad => {
+      const option = document.createElement("option");
+      option.value = edad;
+      option.textContent = edad;
+      filtroEdad.appendChild(option);
+    });
 
-    select {
-      padding: 0.5rem;
-      font-size: 1rem;
-    }
+    sexos.forEach(sexo => {
+      const option = document.createElement("option");
+      option.value = sexo;
+      option.textContent = sexo;
+      filtroSexo.appendChild(option);
+    });
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-    }
+    grados.forEach(grado => {
+      const option = document.createElement("option");
+      option.value = grado;
+      option.textContent = grado;
+      filtroGrado.appendChild(option);
+    });
+  }
 
-    th, td {
-      border: 1px solid #999;
-      padding: 6px 8px;
-      font-size: 0.95rem;
-      text-align: left;
-    }
+  function mostrarDatos() {
+    const edadSeleccionada = filtroEdad.value;
+    const sexoSeleccionado = filtroSexo.value;
+    const gradoSeleccionado = filtroGrado.value;
 
-    th {
-      background-color: #eaeaea;
-      font-weight: bold;
-      color: #222;
-    }
+    tablaBody.innerHTML = "";
 
-    a {
-      color: #0066cc;
-      text-decoration: none;
-    }
+    const datosFiltrados = datos.filter(d =>
+      (edadSeleccionada === "" || d.edad === edadSeleccionada) &&
+      (sexoSeleccionado === "" || d.sexo === sexoSeleccionado) &&
+      (gradoSeleccionado === "" || d.grado === gradoSeleccionado)
+    );
 
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <h1>Listado de Categorías</h1>
+    datosFiltrados.forEach(d => {
+      const fila = document.createElement("tr");
 
-  <div class="filtros">
-    <label>
-      Edad:
-      <select id="filtro-edad">
-        <option value="">Todas</option>
-      </select>
-    </label>
-    <label>
-      Sexo:
-      <select id="filtro-sexo">
-        <option value="">Todos</option>
-      </select>
-    </label>
-    <label>
-      Grado:
-      <select id="filtro-grado">
-        <option value="">Todos</option>
-      </select>
-    </label>
-  </div>
+      const celdaCategoria = document.createElement("td");
+      const enlace = document.createElement("a");
+      const nombreArchivo = `categoria-${d.categoria.replace(/\s+/g, '-').toLowerCase()}.html`;
+      enlace.href = nombreArchivo;
+      enlace.textContent = d.categoria;
+      celdaCategoria.appendChild(enlace);
+      fila.appendChild(celdaCategoria);
 
-  <table id="tabla-categorias">
-    <thead>
-      <tr>
-        <th>Categoría</th>
-        <th>Edad</th>
-        <th>Sexo</th>
-        <th>Grado</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Las filas se insertarán aquí dinámicamente -->
-    </tbody>
-  </table>
+      const celdaEdad = document.createElement("td");
+      celdaEdad.textContent = d.edad;
+      fila.appendChild(celdaEdad);
 
-  <script>
-    const sheetId = "1_hjeo5EjfSx39Ca_iudq3mtqgHKbssua8ySueJTvUpI";
-    const sheetName = "categorias"; // Asegúrate de que este sea el nombre correcto de la hoja
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+      const celdaSexo = document.createElement("td");
+      celdaSexo.textContent = d.sexo;
+      fila.appendChild(celdaSexo);
 
-    const filtroEdad = document.getElementById("filtro-edad");
-    const filtroSexo = document.getElementById("filtro-sexo");
-    const filtroGrado = document.getElementById("filtro-grado");
-    const tablaBody = document.querySelector("#tabla-categorias tbody");
+      const celdaGrado = document.createElement("td");
+      celdaGrado.textContent = d.grado;
+      fila.appendChild(celdaGrado);
 
-    let datos = [];
+      tablaBody.appendChild(fila);
+    });
+  }
 
-    // Función para cargar y procesar los datos
-    async function cargarDatos() {
-      try {
-        const response = await fetch(url);
-        const csvText = await response.text();
-        const filas = csvText.trim().split('\n').map(fila => fila.split(',').map(col => col.trim().replace(/^"|"$/g, '')));
+  filtroEdad.addEventListener("change", mostrarDatos);
+  filtroSexo.addEventListener("change", mostrarDatos);
+  filtroGrado.addEventListener("change", mostrarDatos);
 
-        const encabezados = filas[0];
-        const indiceCategoria = encabezados.indexOf("Categoría");
-        const indiceEdad = encabezados.indexOf("Edad");
-        const indiceSexo = encabezados.indexOf("Sexo");
-        const indiceGrado = encabezados.indexOf("Grado");
-
-        datos = filas.slice(1).map(fila => ({
-          categoria: fila[indiceCategoria],
-          edad: fila[indiceEdad],
-          sexo: fila[indiceSexo],
-          grado: fila[indiceGrado]
-        }));
-
-        poblarFiltros();
-        mostrarDatos();
-      } catch (error) {
-        console.error("Error al cargar los datos:", error);
-      }
-    }
-
-    // Función para poblar los filtros con opciones únicas
-    function poblarFiltros() {
-      const edades = [...new Set(datos.map(d => d.edad))].sort();
-      const sexos = [...new Set(datos.map(d => d.sexo))].sort();
-      const grados = [...new Set(datos.map(d => d.grado))].sort();
-
-      edades.forEach(edad => {
-        const option = document.createElement("option");
-        option.value = edad;
-        option.textContent = edad;
-        filtroEdad.appendChild(option);
-      });
-
-      sexos.forEach(sexo => {
-        const option = document.createElement("option");
-        option.value = sexo;
-        option.textContent = sexo;
-        filtroSexo.appendChild(option);
-      });
-
-      grados.forEach(grado => {
-        const option = document.createElement("option");
-        option.value = grado;
-        option.textContent = grado;
-        filtroGrado.appendChild(option);
-      });
-    }
-
-    // Función para mostrar los datos en la tabla
-    function mostrarDatos() {
-      const edadSeleccionada = filtroEdad.value;
-      const sexoSeleccionado = filtroSexo.value;
-      const gradoSeleccionado = filtroGrado.value;
-
-      tablaBody.innerHTML = "";
-
-      const datosFiltrados = datos.filter(d => {
-        return (
-          (edadSeleccionada === "" || d.edad === edadSeleccionada) &&
-          (sexoSeleccionado === "" || d.sexo === sexoSeleccionado) &&
-          (gradoSeleccionado === "" || d.grado === gradoSeleccionado)
-        );
-      });
-
-      datosFiltrados.forEach(d => {
-        const fila = document.createElement("tr");
-
-        const celdaCategoria = document.createElement("td");
-        const enlace = document.createElement("a");
-        // Genera un nombre de archivo basado en la categoría, por ejemplo: "categoria-125.html"
-        const nombreArchivo = `categoria-${d.categoria.replace(/\s+/g, '-').toLowerCase()}.html`;
-        enlace.href = nombreArchivo;
-        enlace.textContent = d.categoria;
-        celdaCategoria.appendChild(enlace);
-        fila.appendChild(celdaCategoria);
-
-        const celdaEdad = document.createElement("td");
-        celdaEdad.textContent = d.edad;
-        fila.appendChild(celdaEdad);
-
-        const celdaSexo = document.createElement("td");
-        celdaSexo.textContent = d.sexo;
-        fila.appendChild(celdaSexo);
-
-        const celdaGrado = document.createElement("td");
-        celdaGrado.textContent = d.grado;
-        fila.appendChild(celdaGrado);
-
-        tablaBody.appendChild(fila);
-      });
-    }
-
-    // Event listeners para los filtros
-    filtroEdad.addEventListener("change", mostrarDatos);
-    filtroSexo.addEventListener("change", mostrarDatos);
-    filtroGrado.addEventListener("change", mostrarDatos);
-
-    // Cargar los datos al iniciar
-    cargarDatos();
-  </script>
-</body>
-</html>
+  cargarDatos();
+</script>
 
