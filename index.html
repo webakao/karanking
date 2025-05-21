@@ -2,69 +2,101 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ranking Torneo de Karate</title>
+  <title>Ranking de Karate</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      text-align: center;
-      padding: 20px;
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
     }
+
     h1 {
-      margin-bottom: 30px;
+      text-align: center;
+      color: #111;
     }
+
+    h3 {
+      margin-top: 3rem;
+      color: #333;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.3rem;
+      font-size: 1.2rem;
+    }
+
     table {
-      margin: 0 auto;
       border-collapse: collapse;
-      width: 80%;
-      background-color: white;
+      width: 100%;
+      margin-bottom: 2rem;
+      background: white;
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid #999;
+      padding: 6px 8px;
+      font-size: 0.95rem;
+      text-align: left;
     }
+
     th {
-      background-color: #e0e0e0;
+      background-color: #eaeaea;
+      font-weight: bold;
+      color: #222;
     }
   </style>
 </head>
 <body>
-  <h1>Ranking Torneo de Karate</h1>
-  <div id="ranking">Cargando tabla...</div>
+  <h1>Ranking de Karate</h1>
+  <div id="contenedor-tablas"></div>
 
   <script>
-    const sheetID = "1hrE2SjUW2BgDBHsd4xXNx82RfUQwJ7mvxeNGyeWKJ2c";
-    const sheetName = "Hoja1"; // Cambiá si tu hoja tiene otro nombre
-    const url = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+    const hojas = [
+      { nombre: "125", titulo: "Ranking General Consolidado" },
+      { nombre: "SudChile", titulo: "Torneo Sudamericano Chile" },
+      { nombre: "NacKyudo", titulo: "Torneo Nacional Kyudokan" },
+      { nombre: "NakAKAO", titulo: "Torneo Nacional AKAO" },
+      { nombre: "RankFakko1", titulo: "Torneo Raqueable FAKKO Nº1" },
+      { nombre: "RankFakko2", titulo: "Torneo Raqueable FAKKO Nº2" },
+      { nombre: "RankFakko3", titulo: "Torneo Raqueable FAKKO Nº3" },
+      { nombre: "RankFakko4", titulo: "Torneo Raqueable FAKKO Nº4" },
+    ];
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        const table = document.createElement("table");
-        const header = table.insertRow();
-        ["Puesto", "Nombre y Apellido", "Graduación", "Categoría", "Dojo"].forEach(text => {
-          const th = document.createElement("th");
-          th.textContent = text;
-          header.appendChild(th);
-        });
+    const sheetId = "1Uws6EozyrILb8clWBiWHUv7XQHyOWhTpmMMerqsFZJg";
+    const contenedor = document.getElementById("contenedor-tablas");
 
-        data.forEach(row => {
-          const tr = table.insertRow();
-          ["Puesto", "Nombre y Apellido", "Graduación", "Categoría", "Dojo"].forEach(key => {
-            const td = tr.insertCell();
-            td.textContent = row[key] || "";
+    hojas.forEach(({ nombre, titulo }) => {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
+      
+      fetch(url)
+        .then(response => response.text())
+        .then(csvText => {
+          const rows = csvText.trim().split('\n').map(row => row.split(','));
+          
+          const table = document.createElement('table');
+          const caption = document.createElement('h3');
+          caption.textContent = titulo;
+          contenedor.appendChild(caption);
+
+          const thead = document.createElement('thead');
+          const tbody = document.createElement('tbody');
+
+          rows.forEach((cols, index) => {
+            const tr = document.createElement('tr');
+            cols.forEach(col => {
+              const cell = document.createElement(index === 0 ? 'th' : 'td');
+              cell.textContent = col.trim();
+              tr.appendChild(cell);
+            });
+            (index === 0 ? thead : tbody).appendChild(tr);
           });
-        });
 
-        const container = document.getElementById("ranking");
-        container.innerHTML = "";
-        container.appendChild(table);
-      })
-      .catch(err => {
-        document.getElementById("ranking").innerHTML = "Error al cargar los datos.";
-        console.error(err);
-      });
+          table.appendChild(thead);
+          table.appendChild(tbody);
+          contenedor.appendChild(table);
+        })
+        .catch(error => {
+          console.error(`Error cargando hoja ${nombre}:`, error);
+        });
+    });
   </script>
 </body>
 </html>
